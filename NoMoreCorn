@@ -145,5 +145,5 @@ function attachOverlayObserver() {
         });
     }).observe(document.documentElement,{childList:true,subtree:true});
 
-    console.log('✅ YT Anti‑AdBlock+Kick+Overlay v2.3.2 loaded');
+    console.log('YT Anti‑AdBlock+Kick+Overlay v2.3.2 loaded');
 })();
