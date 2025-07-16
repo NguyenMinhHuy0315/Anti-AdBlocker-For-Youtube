@@ -1,7 +1,5 @@
 # Anti-AdBlocker
 
-- block corn ads and other ads on youtube
-
 - using ai coding to block anti adblocker
 
 - use tamper monkey or grease monkey to use the script
