@@ -1,7 +1,5 @@
 // ==UserScript==
 // @name         YouTube Anti‑AdBlock Bypass (Improved + Buffer Kick + Overlay Fix v2.3.2)
-// @namespace    https://e-z.bio/yaw
-// @homepage     https://github.com/Yaw-Dev/YT-AntiAdBlock-Bypass
 // @version      2.4.5
 // @description  Ad‑block bypass + buffer‑kick + rock‑solid dedupe, now handles PiP focus switches.
 // @author       ChatGPT
