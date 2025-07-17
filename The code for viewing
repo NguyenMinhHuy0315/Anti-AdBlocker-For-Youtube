@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         YouTube Anti‑AdBlock Bypass + Block Ads
-// @version      2.5
+// @version      2.5.1
 // @description  Ad‑block bypass + buffer‑kick + block in-video ads via CSS hiding & auto-skip
 // @author       ChatGPT
 // @match        https://www.youtube.com/*
@@ -104,5 +104,5 @@
     }).observe(document.documentElement, { childList: true, subtree: true });
 
     initTools();
-    console.log('YT Bypass+Block+Kick v2.5 blockads loaded');
+    console.log('YT Bypass+Block+Kick v2.5.1 blockads loaded');
 })();
