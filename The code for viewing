@@ -42,15 +42,19 @@
 
     // ——— BLOCK ADS VIA CSS ———
     const css = `
-.video-ads,
-.ytp-ad-module,
-.ytp-ad-player-overlay,
-.ytp-paid-content-overlay-renderer,
-.ytp-overlay-container,
-ytd-player-legacy-desktop-watch-ads-renderer {
-    display: none !important;
-}
-`;
+    .video-ads,
+    .ytp-ad-module,
+    .ytp-ad-player-overlay,
+    .ytp-paid-content-overlay-renderer,
+    .ytp-overlay-container,
+    ytd-player-legacy-desktop-watch-ads-renderer,
+
+    /* hide the enforcement “you must disable AdBlock” popup */
+    ytd-playability-error-supported-renderers,
+    ytd-enforcement-message-view-model {
+        display: none !important;
+    }
+    `;
     const style = document.createElement('style');
     style.textContent = css;
     document.head.appendChild(style);
