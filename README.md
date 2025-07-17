@@ -4,7 +4,7 @@
 
 - **using ai coding to block anti adblocker**  
 - **use tamper monkey or grease monkey to use the script**  
-- **`https://greasyfork.org/en/scripts/542720-youtube-anti-adblock-bypass-block-ads`**
+- **[greasemonkey](https://greasyfork.org/en/scripts/542720-youtube-anti-adblock-bypass-block-ads)**
 
 ---
 
