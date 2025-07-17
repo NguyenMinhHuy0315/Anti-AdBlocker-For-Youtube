@@ -1,9 +1,7 @@
 // ==UserScript==
-// @name         YouTube Anti‑AdBlock Bypass (Improved + Buffer Kick + Overlay Fix v2.3.2)
-// @namespace    https://e-z.bio/yaw
-// @homepage     https://github.com/Yaw-Dev/YT-AntiAdBlock-Bypass
-// @version      2.4.5
-// @description  Ad‑block bypass + buffer‑kick + rock‑solid dedupe, now handles PiP focus switches.
+// @name         YouTube Anti‑AdBlock Bypass + Block Ads
+// @version      2.5
+// @description  Ad‑block bypass + buffer‑kick + block in-video ads via CSS hiding & auto-skip
 // @author       ChatGPT
 // @match        https://www.youtube.com/*
 // @icon         https://www.gstatic.com/youtube/img/branding/favicon/favicon_192x192.png
@@ -42,108 +40,65 @@
         }, 1000);
     }
 
-    // ——— AD‑BLOCK BYPASS ———
+    // ——— BLOCK ADS VIA CSS ———
+    const css = `
+.video-ads,
+.ytp-ad-module,
+.ytp-ad-player-overlay,
+.ytp-paid-content-overlay-renderer,
+.ytp-overlay-container,
+ytd-player-legacy-desktop-watch-ads-renderer {
+    display: none !important;
+}
+`;
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+
+    // ——— AD‑BLOCK BYPASS & SKIP ———
     function initAdObserver() {
-        const p = document.querySelector('.html5-video-player');
-        if (!p) return;
+        const player = document.querySelector('.html5-video-player');
+        if (!player) return;
         new MutationObserver(muts => {
             muts.forEach(m => {
-                if (m.attributeName==='class' && p.classList.contains('ad-showing')) {
-                    p.querySelector('#efyt-not-interested')?.click();
-                    console.log('[YT Bypass] clicked');
+                if (m.attributeName === 'class' && player.classList.contains('ad-showing')) {
+                    // click "Not Interested" if present
+                    player.querySelector('#efyt-not-interested')?.click();
+                    // click skip button if available
+                    document.querySelector('.ytp-ad-skip-button')?.click();
+                    // force skip by seeking to end
+                    const v = player.querySelector('video');
+                    if (v) v.currentTime = v.duration;
+                    console.log('[YT Bypass] ad blocked/skipped');
                 }
             });
-        }).observe(p, { attributes: true });
+        }).observe(player, { attributes: true });
     }
 
-    // ——— OVERLAY DEDUPE ———
-    function dedupe(player = document.querySelector('.html5-video-player')) {
-        if (!player) return;
-        const bars = [...player.querySelectorAll('.ytp-chrome-bottom')];
-        if (bars.length>1) bars.slice(1).forEach(e=>e.remove());
-        const times = [...player.querySelectorAll('.ytp-time-display')];
-        if (times.length>1) times.slice(1).forEach(e=>e.remove());
-    }
-
-function attachOverlayObserver() {
-    const p = document.querySelector('.html5-video-player');
-    if (!p || p._obs) return;
-
-    // Mark that we've attached the observer
-    p._obs = new MutationObserver(muts => {
-        let added = false;
-        muts.forEach(m => {
-            m.addedNodes.forEach(n => {
-                if (
-                    n.nodeType === 1 &&
-                    (n.matches('.ytp-chrome-bottom') || n.querySelector('.ytp-chrome-bottom'))
-                ) {
-                    added = true;
-                }
-            });
-        });
-        if (added) requestAnimationFrame(() => dedupe(p));
-    });
-    p._obs.observe(p, { childList: true, subtree: true });
-
-    // Common UI state events
-    const hook = () => setTimeout(() => dedupe(p), 200);
-    [
-        'enterpictureinpicture',
-        'leavepictureinpicture',
-        'fullscreenchange',
-        'webkitfullscreenchange',
-        'mozfullscreenchange'
-    ].forEach(evt => document.addEventListener(evt, hook));
-
-    // Player API state changes
-    p.addEventListener('onStateChange', hook);
-
-    // When you switch tabs or windows
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') dedupe(p);
-    });
-    window.addEventListener('focus', () => dedupe(p));
-
-    // Only dedupe on click **if** there are actually duplicates, and wait 300 ms
-    p.addEventListener('click', () => {
-        setTimeout(() => {
-            const bars = p.querySelectorAll('.ytp-chrome-bottom');
-            const times = p.querySelectorAll('.ytp-time-display');
-            if (bars.length > 1 || times.length > 1) {
-                dedupe(p);
+    // ——— BUFFER KICK ———
+    const SEEK = 0.1;
+    new MutationObserver(() => {
+        document.querySelectorAll('video').forEach(v => {
+            if (!v._kicked) {
+                v.addEventListener('loadedmetadata', () => {
+                    v.currentTime = Math.min(v.duration * 0.01, SEEK);
+                    v._kicked = true;
+                    console.debug('[Kick] at', v.currentTime);
+                }, { once: true });
             }
-        }, 300);
-    });
+        });
+    }).observe(document.documentElement, { childList: true, subtree: true });
 
-    // Slow fallback sweep (in case something still slips through)
-    setInterval(() => dedupe(p), 10000);
-}
-
+    // Initialize only ad bypass & block
     function initTools() {
         initAdObserver();
-        attachOverlayObserver();
     }
 
     // SPA nav watcher
     new MutationObserver(() => {
         if (document.querySelector('ytd-watch-flexy[page-loaded]')) initTools();
-    }).observe(document.documentElement, { childList:true, subtree:true });
+    }).observe(document.documentElement, { childList: true, subtree: true });
+
     initTools();
-
-    // ——— BUFFER KICK ———
-    const SEEK=0.1;
-    new MutationObserver(()=>{
-        document.querySelectorAll('video').forEach(v=>{
-            if (!v._kicked) {
-                v.addEventListener('loadedmetadata', ()=>{
-                    v.currentTime = Math.min(v.duration*0.01,SEEK);
-                    v._kicked=true;
-                    console.debug('[Kick] at',v.currentTime);
-                },{once:true});
-            }
-        });
-    }).observe(document.documentElement,{childList:true,subtree:true});
-
-    console.log('✅ YT Anti‑AdBlock+Kick+Overlay v2.3.2 loaded');
+    console.log('YT Bypass+Block+Kick v2.5 blockads loaded');
 })();
